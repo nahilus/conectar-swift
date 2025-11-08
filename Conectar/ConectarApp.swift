@@ -11,7 +11,7 @@ import SwiftUI
 struct ConectarApp: App {
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            ProjectTab()
         }
     }
 }
