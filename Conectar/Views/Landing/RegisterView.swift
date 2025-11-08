@@ -61,7 +61,7 @@ struct RegisterView: View {
             }
             .padding(.top, 60)
             .navigationDestination(isPresented: $viewModel.isAuthenticated) {
-                OnboardingStage1()
+                OnboardingContainerView()
             }
         }
     }

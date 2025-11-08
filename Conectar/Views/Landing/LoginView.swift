@@ -56,7 +56,7 @@ struct LoginView: View {
             }
             .padding(.top, 60)
             .navigationDestination(isPresented: $viewModel.isAuthenticated) {
-                MainTabView()
+                OnboardingContainerView()
             }
         }
     }
