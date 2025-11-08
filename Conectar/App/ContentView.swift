@@ -7,6 +7,8 @@ struct ContentView: View {
         switch selectedTab {
         case "Discover":
             DiscoverView(selectedTab: $selectedTab)
+        case "Map":
+            MapTab(selectedTab: $selectedTab)
         case "Projects":
             ProjectTab(selectedTab: $selectedTab)
         case "Chat":
