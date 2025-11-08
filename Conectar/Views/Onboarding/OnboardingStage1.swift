@@ -62,13 +62,21 @@ struct OnboardingStage1: View {
             
             Text("Tell us about yourself")
                 .font(.title3).fontWeight(.semibold)
-            TextEditor(text: $viewModel.bio)
-                .frame(minHeight: 100)
-                .padding(8)
-                .background(Color(.secondarySystemBackground))
-                .cornerRadius(12)
-                .focused($focusedField, equals: .bio)
-            
+            ZStack(alignment: .topLeading) {
+                TextEditor(text: $viewModel.bio)
+                    .frame(minHeight: 100)
+                    .padding(8)
+                    .background(Color(.secondarySystemBackground))
+                    .cornerRadius(12)
+                    .focused($focusedField, equals: .bio)
+                if viewModel.bio.isEmpty {
+                    Text("e.g., Full-stack developer passionate about AI and sustainable tech…")
+                        .foregroundStyle(.secondary)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 14)
+                        .allowsHitTesting(false)
+                }
+            }
             Button {
                 focusedField = nil
                 viewModel.goNext()
@@ -87,7 +95,7 @@ struct OnboardingStage1: View {
         }
         .padding(20)
         .background(RoundedRectangle(cornerRadius: 24).fill(Color(.systemBackground)))
-        .shadow(radius: 8)
+        .shadow(color: .black.opacity(0.08), radius: 16, x: 0, y: 8)
     }
     
     private var logo: some View {
@@ -101,5 +109,4 @@ struct OnboardingStage1: View {
         }
     }
 }
-
 
