@@ -1,8 +1,9 @@
 import SwiftUI
+import Combine
 
 struct RegisterView: View {
     @Environment(\.dismiss) private var dismiss
-    @StateObject private var viewModel = AuthViewModel()
+    @ObservedObject var authViewModel: AuthViewModel
 
     var body: some View {
         NavigationStack {
@@ -10,20 +11,20 @@ struct RegisterView: View {
                 header
 
                 VStack(spacing: 16) {
-                    TextField("Email", text: $viewModel.email)
+                    TextField("Email", text: $authViewModel.email)
                         .textContentType(.emailAddress)
                         .keyboardType(.emailAddress)
                         .padding()
                         .background(Color.secondarySystemBackgroundCompat)
                         .cornerRadius(12)
                     
-                    SecureField("Password", text: $viewModel.password)
+                    SecureField("Password", text: $authViewModel.password)
                         .textContentType(.newPassword)
                         .padding()
                         .background(Color.secondarySystemBackgroundCompat)
                         .cornerRadius(12)
                     
-                    SecureField("Confirm Password", text: $viewModel.confirmPassword)
+                    SecureField("Confirm Password", text: $authViewModel.confirmPassword)
                         .padding()
                         .background(Color.secondarySystemBackgroundCompat)
                         .cornerRadius(12)
@@ -31,9 +32,9 @@ struct RegisterView: View {
                 .padding(.horizontal)
                 
                 Button {
-                    Task { await viewModel.register() }
+                    Task { await authViewModel.register() }
                 } label: {
-                    if viewModel.isLoading {
+                    if authViewModel.isLoading {
                         ProgressView().tint(.white)
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 16)
@@ -48,9 +49,9 @@ struct RegisterView: View {
                     }
                 }
                 .padding(.horizontal)
-                .disabled(viewModel.email.isEmpty || viewModel.password.isEmpty)
+                .disabled(authViewModel.email.isEmpty || authViewModel.password.isEmpty)
                 
-                if let error = viewModel.errorMessage {
+                if let error = authViewModel.errorMessage {
                     Text(error)
                         .foregroundColor(.red)
                         .font(.footnote)
@@ -60,7 +61,7 @@ struct RegisterView: View {
                 Spacer()
             }
             .padding(.top, 60)
-            .navigationDestination(isPresented: $viewModel.isAuthenticated) {
+            .navigationDestination(isPresented: $authViewModel.isAuthenticated) {
                 OnboardingContainerView()
             }
         }

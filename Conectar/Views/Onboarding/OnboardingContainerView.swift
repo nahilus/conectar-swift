@@ -21,7 +21,7 @@ struct OnboardingContainerView: View {
                 case 3:
                     OnboardingStage3(viewModel: viewModel)
                 default:
-                    EmptyView()
+                    ContentView()
                 }
             }
             .animation(.easeInOut, value: viewModel.stage)

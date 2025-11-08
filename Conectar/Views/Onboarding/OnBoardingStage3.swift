@@ -27,6 +27,9 @@ struct OnboardingStage3: View {
             .padding(.vertical, 24)
         }
         .navigationBarBackButtonHidden(true)
+        .navigationDestination(isPresented: $viewModel.isOnboardingComplete) {
+            ContentView()
+        }
     }
     
     private var header: some View {
@@ -83,7 +86,7 @@ struct OnboardingStage3: View {
                         if isSubmitting {
                             ProgressView().progressViewStyle(CircularProgressViewStyle(tint: .white))
                         } else {
-                            Text("Get Started")
+                            Text("Finish")
                             Image(systemName: "arrow.right")
                         }
                         Spacer()

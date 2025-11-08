@@ -12,6 +12,8 @@ import Combine
 @MainActor
 final class OnboardingViewModel: ObservableObject {
     // Shared state between all onboarding screens
+    @Published var isOnboardingComplete = false
+
     @Published var stage: Int = 1
     @Published var fullName: String = ""
     @Published var bio: String = ""
@@ -55,9 +57,13 @@ final class OnboardingViewModel: ObservableObject {
                 print("Server response: \(httpResponse.statusCode)")
             }
             print("Response data:", String(data: data, encoding: .utf8) ?? "")
+            
+            // ✅ Mark onboarding as complete
+            isOnboardingComplete = true
         } catch {
             print("Error sending onboarding data:", error.localizedDescription)
         }
     }
+
 }
 
