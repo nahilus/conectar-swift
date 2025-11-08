@@ -7,6 +7,7 @@
 
 import Foundation
 import SwiftUI
+import Combine
 
 @MainActor
 final class OnboardingViewModel: ObservableObject {
@@ -59,3 +60,4 @@ final class OnboardingViewModel: ObservableObject {
         }
     }
 }
+
