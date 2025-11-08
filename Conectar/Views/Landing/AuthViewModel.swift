@@ -1,4 +1,5 @@
 import SwiftUI
+import FirebaseAuth
 import Combine
 
 @MainActor
@@ -9,6 +10,11 @@ final class AuthViewModel: ObservableObject {
     @Published var isLoading = false
     @Published var errorMessage: String?
     @Published var isAuthenticated = false
+    init() {
+        if Auth.auth().currentUser != nil {
+            isAuthenticated = true
+        }
+    }
 
     func login() async {
         guard !email.isEmpty, !password.isEmpty else {
@@ -20,14 +26,11 @@ final class AuthViewModel: ObservableObject {
         defer { isLoading = false }
 
         do {
-            let success = try await APIService.shared.login(email: email, password: password)
-            if success {
-                isAuthenticated = true
-            } else {
-                errorMessage = "Invalid credentials."
-            }
+            let result = try await Auth.auth().signIn(withEmail: email, password: password)
+            print("User logged in: \(result.user.uid)")
+            isAuthenticated = true
         } catch {
-            errorMessage = error.localizedDescription
+            errorMessage = mapFirebaseError(error)
         }
     }
 
@@ -45,14 +48,38 @@ final class AuthViewModel: ObservableObject {
         defer { isLoading = false }
 
         do {
-            let success = try await APIService.shared.register(email: email, password: password)
-            if success {
-                isAuthenticated = true
-            } else {
-                errorMessage = "Registration failed."
-            }
+            let result = try await Auth.auth().createUser(withEmail: email, password: password)
+            print("User registered: \(result.user.uid)")
+            isAuthenticated = true
+        } catch {
+            errorMessage = mapFirebaseError(error)
+        }
+    }
+
+    func logout() {
+        do {
+            try Auth.auth().signOut()
+            isAuthenticated = false
         } catch {
             errorMessage = error.localizedDescription
+        }
+    }
+
+    private func mapFirebaseError(_ error: Error) -> String {
+        let nsError = error as NSError
+        switch nsError.code {
+        case AuthErrorCode.invalidEmail.rawValue:
+            return "Invalid email address."
+        case AuthErrorCode.emailAlreadyInUse.rawValue:
+            return "Email is already in use."
+        case AuthErrorCode.weakPassword.rawValue:
+            return "Password should be at least 6 characters."
+        case AuthErrorCode.wrongPassword.rawValue:
+            return "Incorrect password."
+        case AuthErrorCode.userNotFound.rawValue:
+            return "No account found for this email."
+        default:
+            return error.localizedDescription
         }
     }
 }
