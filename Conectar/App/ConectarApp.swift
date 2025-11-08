@@ -10,6 +10,7 @@ import FirebaseCore
 
 @main
 struct ConectarApp: App {
+    @State private var selectedTab: String = "Discover"
     init() {
         FirebaseApp.configure()
     }
@@ -20,3 +21,4 @@ struct ConectarApp: App {
         }
     }
 }
+
