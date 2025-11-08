@@ -2,64 +2,65 @@ import SwiftUI
 
 struct LoginView: View {
     @Environment(\.dismiss) private var dismiss
-    @State private var email = ""
-    @State private var password = ""
-    @State private var isLoading = false
-    @State private var loginSuccess = false
-    
+    @StateObject private var viewModel = AuthViewModel()
+
     var body: some View {
         NavigationStack {
-            ZStack {
-                Color.systemBackgroundCompat.ignoresSafeArea()
+            VStack(spacing: 28) {
+                header
                 
-                VStack(spacing: 28) {
-                    header
+                VStack(spacing: 16) {
+                    TextField("Email", text: $viewModel.email)
+                        .textContentType(.emailAddress)
+                        .keyboardType(.emailAddress)
+                        .padding()
+                        .background(Color.secondarySystemBackgroundCompat)
+                        .cornerRadius(12)
                     
-                    VStack(spacing: 16) {
-                        TextField("Email", text: $email)
-                            .textContentType(.emailAddress)
-                            .keyboardType(.emailAddress)
-                            .padding()
-                            .background(Color.secondarySystemBackgroundCompat)
-                            .cornerRadius(12)
-                        
-                        SecureField("Password", text: $password)
-                            .textContentType(.password)
-                            .padding()
-                            .background(Color.secondarySystemBackgroundCompat)
-                            .cornerRadius(12)
-                    }
-                    .padding(.horizontal)
-                    
-                    Button(action: loginTapped) {
-                        if isLoading {
-                            ProgressView().tint(.white)
-                                .frame(maxWidth: .infinity)
-                                .padding(.vertical, 16)
-                                .background(RoundedRectangle(cornerRadius: 16).fill(Color.black))
-                        } else {
-                            Text("Log In")
-                                .fontWeight(.semibold)
-                                .frame(maxWidth: .infinity)
-                                .padding(.vertical, 16)
-                                .background(RoundedRectangle(cornerRadius: 16).fill(Color.black))
-                                .foregroundStyle(.white)
-                        }
-                    }
-                    .padding(.horizontal)
-                    .disabled(email.isEmpty || password.isEmpty)
-                    
-                    Spacer()
+                    SecureField("Password", text: $viewModel.password)
+                        .textContentType(.password)
+                        .padding()
+                        .background(Color.secondarySystemBackgroundCompat)
+                        .cornerRadius(12)
                 }
-                .padding(.top, 60)
+                .padding(.horizontal)
+                
+                Button {
+                    Task { await viewModel.login() }
+                } label: {
+                    if viewModel.isLoading {
+                        ProgressView().tint(.white)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 16)
+                            .background(RoundedRectangle(cornerRadius: 16).fill(Color.black))
+                    } else {
+                        Text("Log In")
+                            .fontWeight(.semibold)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 16)
+                            .background(RoundedRectangle(cornerRadius: 16).fill(Color.black))
+                            .foregroundStyle(.white)
+                    }
+                }
+                .padding(.horizontal)
+                .disabled(viewModel.email.isEmpty || viewModel.password.isEmpty)
+                
+                if let error = viewModel.errorMessage {
+                    Text(error)
+                        .foregroundColor(.red)
+                        .font(.footnote)
+                        .padding(.top, 8)
+                }
+
+                Spacer()
             }
-            .navigationBarBackButtonHidden(false)
-            .navigationDestination(isPresented: $loginSuccess) {
+            .padding(.top, 60)
+            .navigationDestination(isPresented: $viewModel.isAuthenticated) {
                 MainTabView()
             }
         }
     }
-    
+
     private var header: some View {
         VStack(spacing: 12) {
             Text("Welcome Back 👋")
@@ -68,20 +69,4 @@ struct LoginView: View {
                 .foregroundStyle(.secondary)
         }
     }
-    
-    private func loginTapped() {
-        isLoading = true
-        APIService.shared.login(email: email, password: password) { success in
-            isLoading = false
-            if success {
-                loginSuccess = true
-            } else {
-                // Handle error properly (e.g. show alert)
-            }
-        }
-    }
-}
-
-#Preview {
-    LoginView()
 }
