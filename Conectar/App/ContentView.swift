@@ -14,7 +14,7 @@ struct ContentView: View {
         case "Chat":
             ChatTab(selectedTab: $selectedTab)
         case "Profile":
-            ProfileTab(selectedTab: $selectedTab)
+            ProfTab(selectedTab: $selectedTab)
         default:
             DiscoverView(selectedTab: $selectedTab)
         }
