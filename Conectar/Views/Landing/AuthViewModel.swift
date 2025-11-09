@@ -12,7 +12,7 @@ final class AuthViewModel: ObservableObject {
     @Published var isAuthenticated = false
     init() {
         if Auth.auth().currentUser != nil {
-            isAuthenticated = true
+            isAuthenticated = false
         }
     }
 

@@ -9,7 +9,7 @@ import SwiftUI
 
 struct ProfTab: View {
     @Binding var selectedTab: String
-    @State private var selectedProfileTab: ProfileTab = .skills
+    @State private var selectedProfileTab: ProfileTabSection = .skills
 
     var body: some View {
         VStack(spacing: 0) {
@@ -26,7 +26,7 @@ struct ProfTab: View {
                 .padding(.top, 12)
             }
 
-            // Consistent bottom navigation (same as MapTab)
+            // Bottom navigation (make sure BottomNavBar exists elsewhere)
             BottomNavBar(selectedTab: $selectedTab)
                 .padding(.horizontal)
                 .padding(.bottom, 8)
@@ -49,7 +49,9 @@ struct HeaderCard: View {
             HStack(alignment: .top) {
                 ZStack {
                     Circle()
-                        .fill(LinearGradient(colors: [Color.purple.opacity(0.9), Color.blue], startPoint: .topLeading, endPoint: .bottomTrailing))
+                        .fill(LinearGradient(colors: [Color.purple.opacity(0.9), Color.blue],
+                                             startPoint: .topLeading,
+                                             endPoint: .bottomTrailing))
                         .frame(width: 64, height: 64)
                     Image(systemName: "person.fill")
                         .font(.system(size: 30, weight: .semibold))
@@ -88,8 +90,10 @@ struct HeaderCard: View {
                 .fixedSize(horizontal: false, vertical: true)
         }
         .padding(16)
-        .background(RoundedRectangle(cornerRadius: 20, style: .continuous)
-            .fill(Color(.secondarySystemBackground)))
+        .background(
+            RoundedRectangle(cornerRadius: 20, style: .continuous)
+                .fill(Color(.secondarySystemBackground))
+        )
         .overlay(
             RoundedRectangle(cornerRadius: 20, style: .continuous)
                 .strokeBorder(Color.black.opacity(0.06))
@@ -163,24 +167,29 @@ struct StatCard: View {
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 14)
-        .background(RoundedRectangle(cornerRadius: 16, style: .continuous)
-            .fill(Color(.secondarySystemBackground)))
-        .overlay(RoundedRectangle(cornerRadius: 16).stroke(Color.black.opacity(0.06)))
+        .background(
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .fill(Color(.secondarySystemBackground))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 16)
+                .stroke(Color.black.opacity(0.06))
+        )
     }
 }
 
 // MARK: - Segmented Tabs
-enum ProfileTab: String, CaseIterable {
+enum ProfileTabSection: String, CaseIterable {
     case skills = "Skills"
     case projects = "Projects"
     case connections = "Connections"
 }
 
 struct SegmentedTabs: View {
-    @Binding var selected: ProfileTab
+    @Binding var selected: ProfileTabSection
     var body: some View {
-        Picker("", selection: $selected) {
-            ForEach(ProfileTab.allCases, id: \.self) { tab in
+        Picker("Select Profile Tab", selection: $selected) {
+            ForEach(ProfileTabSection.allCases, id: \.self) { tab in
                 Text(tab.rawValue).tag(tab)
             }
         }
@@ -190,16 +199,16 @@ struct SegmentedTabs: View {
 
 // MARK: - Content Card
 struct ContentCard: View {
-    let selected: ProfileTab
+    let selected: ProfileTabSection
     var body: some View {
         VStack(alignment: .leading, spacing: 20) {
             switch selected {
             case .skills:
                 SectionBlock(title: "Skills") {
-                    TagCloud(tags: ["React", "Node.js", "Python", "Machine Learning"])
+                    TagCloud(tags: ["React", "Node.js", "Python", "Swift", "Machine Learning", "Firebase", "REST APIs"])
                 }
                 SectionBlock(title: "Interests") {
-                    TagCloud(tags: ["AI", "Sustainability", "Open Source", "Mobile Apps"])
+                    TagCloud(tags: ["AI", "Sustainability", "Open Source", "Mobile Apps", "Design Systems"])
                 }
             case .projects:
                 Placeholder(text: "Projects will appear here")
@@ -208,9 +217,14 @@ struct ContentCard: View {
             }
         }
         .padding(16)
-        .background(RoundedRectangle(cornerRadius: 20, style: .continuous)
-            .fill(Color(.systemBackground)))
-        .overlay(RoundedRectangle(cornerRadius: 20).stroke(Color.black.opacity(0.06)))
+        .background(
+            RoundedRectangle(cornerRadius: 20, style: .continuous)
+                .fill(Color(.systemBackground))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 20)
+                .stroke(Color.black.opacity(0.06))
+        )
     }
 }
 
@@ -226,15 +240,24 @@ struct SectionBlock<Content: View>: View {
         }
     }
 }
-// MARK: - Tag Cloud (using FlowLayout)
+
+// MARK: - Tag Cloud (Improved layout, no UIScreen.main warning)
 struct TagCloud: View {
     let tags: [String]
     let spacing: CGFloat = 8
     let lineSpacing: CGFloat = 8
-    
+    @Environment(\.displayScale) private var scale
+    @Environment(\.dynamicTypeSize) private var dynamicType
+    @Environment(\.horizontalSizeClass) private var hSizeClass
+
     var body: some View {
-        FlowLayout(spacing: spacing, lineSpacing: lineSpacing) {
-            ForEach(tags, id: \.self) { tag in
+        GeometryReader { geo in
+            FlexibleView2(
+                availableWidth: geo.size.width - 32, // account for horizontal padding
+                data: tags,
+                spacing: spacing,
+                alignment: .leading
+            ) { tag in
                 Text(tag)
                     .font(.footnote.weight(.medium))
                     .padding(.horizontal, 10)
@@ -249,57 +272,84 @@ struct TagCloud: View {
                     )
             }
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
+        .frame(height: idealHeight)
+    }
+
+    /// Fallback approximate height so the GeometryReader doesn't collapse
+    private var idealHeight: CGFloat { 100 }
+}
+
+
+// MARK: - Flexible layout for wrapping tags (Fixed)
+struct FlexibleView2<Data: Collection, Content: View>: View where Data.Element: Hashable {
+    let availableWidth: CGFloat
+    let data: Data
+    let spacing: CGFloat
+    let alignment: HorizontalAlignment
+    let content: (Data.Element) -> Content
+
+    @State private var elementsSize: [Data.Element: CGSize] = [:]
+
+    var body: some View {
+        let rows = computeRows()
+        VStack(alignment: alignment, spacing: spacing) {
+            ForEach(Array(rows.enumerated()), id: \.offset) { _, row in
+                HStack(spacing: spacing) {
+                    ForEach(row, id: \.self) { item in
+                        content(item)
+                            .fixedSize()
+                            .background(SizeReader(size: binding(for: item)))
+                    }
+                }
+            }
+        }
+    }
+
+    private func computeRows() -> [[Data.Element]] {
+        var rows: [[Data.Element]] = [[]]
+        var currentWidth: CGFloat = 0
+
+        for item in data {
+            let itemSize = elementsSize[item, default: CGSize(width: availableWidth, height: 1)]
+            let itemWidth = itemSize.width
+            if currentWidth + itemWidth + spacing > availableWidth {
+                currentWidth = 0
+                rows.append([item])
+            } else {
+                rows[rows.count - 1].append(item)
+            }
+            currentWidth += itemWidth + spacing
+        }
+        return rows
+    }
+
+    private func binding(for key: Data.Element) -> Binding<CGSize> {
+        Binding(
+            get: { elementsSize[key, default: .zero] },
+            set: { elementsSize[key] = $0 }
+        )
     }
 }
-// MARK: - FlowLayout (View-based implementation, compatible with iOS 15+)
-struct FlowLayout<Content: View>: View {
-    let spacing: CGFloat
-    let lineSpacing: CGFloat
-    let content: () -> Content
 
-    init(
-        spacing: CGFloat = 8,
-        lineSpacing: CGFloat = 8,
-        @ViewBuilder content: @escaping () -> Content
-    ) {
-        self.spacing = spacing
-        self.lineSpacing = lineSpacing
-        self.content = content
-    }
+// MARK: - Helper to measure size of each tag
+private struct SizeReader: View {
+    @Binding var size: CGSize
 
     var body: some View {
         GeometryReader { geometry in
-            self.generateContent(in: geometry)
+            Color.clear
+                .preference(key: SizePreferenceKey.self, value: geometry.size)
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
+        .onPreferenceChange(SizePreferenceKey.self) { newSize in
+            size = newSize
+        }
     }
+}
 
-    private func generateContent(in geometry: GeometryProxy) -> some View {
-        var width: CGFloat = 0
-        var height: CGFloat = 0
-
-        return ZStack(alignment: .topLeading) {
-            content()
-                .alignmentGuide(.leading) { d in
-                    if (abs(width - d.width) > geometry.size.width) {
-                        width = 0
-                        height -= d.height + lineSpacing
-                    }
-                    let result = width
-                    if d.width <= geometry.size.width {
-                        width -= d.width + spacing
-                    }
-                    return result
-                }
-                .alignmentGuide(.top) { _ in
-                    let result = height
-                    if width == 0 {
-                        height -= lineSpacing
-                    }
-                    return result
-                }
-        }
+private struct SizePreferenceKey: PreferenceKey {
+    static var defaultValue: CGSize = .zero
+    static func reduce(value: inout CGSize, nextValue: () -> CGSize) {
+        value = nextValue()
     }
 }
 

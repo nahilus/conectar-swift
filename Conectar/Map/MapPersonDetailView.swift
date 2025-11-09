@@ -81,7 +81,7 @@ struct MapPersonDetailView: View {
                                             .font(.headline)
                                     }
                                     
-                                    FlowLayout(spacing: 8) {
+                                    FlowLayout(spacing: 8, lineSpacing: 8) {
                                         ForEach(profile.skills, id: \.self) { skill in
                                             Text(skill)
                                                 .font(.subheadline)
@@ -109,7 +109,7 @@ struct MapPersonDetailView: View {
                                             .font(.headline)
                                     }
                                     
-                                    FlowLayout(spacing: 8) {
+                                    FlowLayout(spacing: 8, lineSpacing: 8) {
                                         ForEach(profile.interests, id: \.self) { interest in
                                             Text(interest)
                                                 .font(.subheadline)
@@ -241,4 +241,59 @@ struct MapPersonDetailView: View {
 
 #Preview {
     MapPersonDetailView(userId: "alice_001", distance: 150)
+}
+
+struct FlowLayout: Layout {
+    var spacing: CGFloat = 8
+    var lineSpacing: CGFloat = 8
+
+    init(spacing: CGFloat = 8, lineSpacing: CGFloat = 8) {
+        self.spacing = spacing
+        self.lineSpacing = lineSpacing
+    }
+
+    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
+        let maxWidth = proposal.width ?? .infinity
+        var currentX: CGFloat = 0
+        var currentY: CGFloat = 0
+        var lineHeight: CGFloat = 0
+
+        for subview in subviews {
+            let size = subview.sizeThatFits(.unspecified)
+            if currentX > 0 && currentX + size.width > maxWidth {
+                // wrap to next line
+                currentX = 0
+                currentY += lineHeight + lineSpacing
+                lineHeight = 0
+            }
+            lineHeight = max(lineHeight, size.height)
+            currentX += size.width + (currentX == 0 ? 0 : spacing)
+        }
+
+        let finalHeight = currentY + lineHeight
+        let finalWidth = min(maxWidth, proposal.width ?? maxWidth)
+        return CGSize(width: finalWidth.isFinite ? finalWidth : currentX, height: finalHeight)
+    }
+
+    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
+        let maxWidth = bounds.width
+        var currentX: CGFloat = 0
+        var currentY: CGFloat = 0
+        var lineHeight: CGFloat = 0
+
+        for subview in subviews {
+            let size = subview.sizeThatFits(.unspecified)
+            if currentX > 0 && currentX + size.width > maxWidth {
+                // wrap to next line
+                currentX = 0
+                currentY += lineHeight + lineSpacing
+                lineHeight = 0
+            }
+
+            subview.place(at: CGPoint(x: bounds.minX + currentX, y: bounds.minY + currentY), proposal: ProposedViewSize(width: size.width, height: size.height))
+
+            currentX += size.width + (currentX == 0 ? 0 : spacing)
+            lineHeight = max(lineHeight, size.height)
+        }
+    }
 }
