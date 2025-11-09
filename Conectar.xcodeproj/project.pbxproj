@@ -10,6 +10,7 @@
 		010FEEF22EBF7D2F00F5844B /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = 010FEEF12EBF7D2F00F5844B /* FirebaseAuth */; };
 		010FEEF42EBF7D2F00F5844B /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = 010FEEF32EBF7D2F00F5844B /* FirebaseCore */; };
 		010FEEF62EBF7FBF00F5844B /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 010FEEF52EBF7FBF00F5844B /* GoogleService-Info.plist */; };
+		010FEF4F2EC02DC800F5844B /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = 010FEF4E2EC02DC800F5844B /* FirebaseFirestore */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -32,6 +33,7 @@
 			files = (
 				010FEEF42EBF7D2F00F5844B /* FirebaseCore in Frameworks */,
 				010FEEF22EBF7D2F00F5844B /* FirebaseAuth in Frameworks */,
+				010FEF4F2EC02DC800F5844B /* FirebaseFirestore in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -77,6 +79,7 @@
 			packageProductDependencies = (
 				010FEEF12EBF7D2F00F5844B /* FirebaseAuth */,
 				010FEEF32EBF7D2F00F5844B /* FirebaseCore */,
+				010FEF4E2EC02DC800F5844B /* FirebaseFirestore */,
 			);
 			productName = Conectar;
 			productReference = 010FEE7B2EBF033600F5844B /* Conectar.app */;
@@ -266,6 +269,7 @@
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Allow location access";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
@@ -308,6 +312,7 @@
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Allow location access";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
@@ -383,6 +388,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 010FEEF02EBF79F500F5844B /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
 			productName = FirebaseCore;
+		};
+		010FEF4E2EC02DC800F5844B /* FirebaseFirestore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 010FEEF02EBF79F500F5844B /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseFirestore;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

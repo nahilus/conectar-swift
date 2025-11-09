@@ -1,11 +1,18 @@
+//
+//  ProfTab.swift
+//  Conectar
+//
+//  Created by Beautiful princess ❤️
+//
+
 import SwiftUI
 
 struct ProfTab: View {
     @Binding var selectedTab: String
     @State private var selectedProfileTab: ProfileTab = .skills
-    
+
     var body: some View {
-        ZStack(alignment: .bottom) {
+        VStack(spacing: 0) {
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 20) {
                     HeaderCard()
@@ -13,16 +20,26 @@ struct ProfTab: View {
                     StatsRow()
                     SegmentedTabs(selected: $selectedProfileTab)
                     ContentCard(selected: selectedProfileTab)
-                    Spacer(minLength: 80) // room for tab bar
+                        .padding(.bottom, 60) // Leave space for bottom nav
                 }
                 .padding(.horizontal)
                 .padding(.top, 12)
             }
-            BottomTabBar(selectedTab: $selectedTab)
+
+            // Consistent bottom navigation (same as MapTab)
+            BottomNavBar(selectedTab: $selectedTab)
+                .padding(.horizontal)
+                .padding(.bottom, 8)
+                .background(Color(UIColor.systemBackground))
+                .shadow(color: .black.opacity(0.05), radius: 8, y: 2)
         }
         .background(Color(.systemGroupedBackground).ignoresSafeArea())
         .navigationBarHidden(true)
     }
+}
+
+#Preview {
+    ProfTab(selectedTab: .constant("Profile"))
 }
 
 // MARK: - Header
@@ -38,7 +55,7 @@ struct HeaderCard: View {
                         .font(.system(size: 30, weight: .semibold))
                         .foregroundStyle(.white)
                 }
-                
+
                 VStack(alignment: .leading, spacing: 6) {
                     Text("Alex Chen")
                         .font(.title3).bold()
@@ -51,7 +68,9 @@ struct HeaderCard: View {
                             .foregroundStyle(.secondary)
                     }
                 }
+
                 Spacer()
+
                 Button {
                     // settings tapped
                 } label: {
@@ -62,7 +81,8 @@ struct HeaderCard: View {
                         .background(.ultraThinMaterial, in: Circle())
                 }
             }
-            Text("Full-stack developer passionate about AI and sustainable tech")
+
+            Text("Full-stack developer passionate about AI and sustainable tech.")
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
@@ -77,7 +97,7 @@ struct HeaderCard: View {
     }
 }
 
-// MARK: - Buttons
+// MARK: - Action Buttons
 struct ActionButtons: View {
     var body: some View {
         HStack(spacing: 12) {
@@ -92,11 +112,9 @@ struct CapsuleButton: View {
     let title: String
     let systemImage: String
     var style: Style = .filled
-    
+
     var body: some View {
-        Button {
-            // action
-        } label: {
+        Button(action: {}) {
             HStack(spacing: 8) {
                 Image(systemName: systemImage)
                 Text(title)
@@ -134,6 +152,7 @@ struct StatsRow: View {
 struct StatCard: View {
     let value: String
     let label: String
+
     var body: some View {
         VStack(spacing: 6) {
             Text(value)
@@ -166,7 +185,6 @@ struct SegmentedTabs: View {
             }
         }
         .pickerStyle(.segmented)
-        .background(RoundedRectangle(cornerRadius: 16).fill(Color.clear))
     }
 }
 
@@ -196,6 +214,7 @@ struct ContentCard: View {
     }
 }
 
+// MARK: - Section Block
 struct SectionBlock<Content: View>: View {
     let title: String
     @ViewBuilder var content: Content
@@ -207,66 +226,80 @@ struct SectionBlock<Content: View>: View {
         }
     }
 }
-
+// MARK: - Tag Cloud (using FlowLayout)
 struct TagCloud: View {
     let tags: [String]
+    let spacing: CGFloat = 8
+    let lineSpacing: CGFloat = 8
+    
     var body: some View {
-        FlexibleHStack(spacing: 8, lineSpacing: 8) {
+        FlowLayout(spacing: spacing, lineSpacing: lineSpacing) {
             ForEach(tags, id: \.self) { tag in
                 Text(tag)
                     .font(.footnote.weight(.medium))
                     .padding(.horizontal, 10)
                     .padding(.vertical, 6)
-                    .background(RoundedRectangle(cornerRadius: 10, style: .continuous)
-                        .fill(Color(.secondarySystemBackground)))
-                    .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color.black.opacity(0.08)))
+                    .background(
+                        RoundedRectangle(cornerRadius: 10, style: .continuous)
+                            .fill(Color(.secondarySystemBackground))
+                    )
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 10)
+                            .stroke(Color.black.opacity(0.08))
+                    )
             }
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 }
-
-// MARK: - Flexible layout for tags
-struct FlexibleHStack<Content: View>: View {
+// MARK: - FlowLayout (View-based implementation, compatible with iOS 15+)
+struct FlowLayout<Content: View>: View {
     let spacing: CGFloat
     let lineSpacing: CGFloat
-    @ViewBuilder let content: Content
-    
-    init(spacing: CGFloat = 8, lineSpacing: CGFloat = 8, @ViewBuilder content: () -> Content) {
+    let content: () -> Content
+
+    init(
+        spacing: CGFloat = 8,
+        lineSpacing: CGFloat = 8,
+        @ViewBuilder content: @escaping () -> Content
+    ) {
         self.spacing = spacing
         self.lineSpacing = lineSpacing
-        self.content = content()
+        self.content = content
     }
-    
-    var body: some View {
-        _FlexibleHStack(spacing: spacing, lineSpacing: lineSpacing, content: content)
-    }
-}
 
-private struct _FlexibleHStack<Content: View>: View {
-    let spacing: CGFloat
-    let lineSpacing: CGFloat
-    let content: Content
-    
     var body: some View {
-        var width = CGFloat.zero
-        var height = CGFloat.zero
-        return GeometryReader { geo in
-            ZStack(alignment: .topLeading) {
-                content
-                    .fixedSize()
-                    .alignmentGuide(.leading, computeValue: { d in
-                        if abs(width - d.width) > geo.size.width {
-                            width = 0
-                            height -= d.height + lineSpacing
-                        }
-                        let result = width
-                        if d.width <= geo.size.width { width -= d.width + spacing }
-                        return result
-                    })
-                    .alignmentGuide(.top) { _ in height }
-            }
+        GeometryReader { geometry in
+            self.generateContent(in: geometry)
         }
-        .frame(minHeight: 0)
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private func generateContent(in geometry: GeometryProxy) -> some View {
+        var width: CGFloat = 0
+        var height: CGFloat = 0
+
+        return ZStack(alignment: .topLeading) {
+            content()
+                .alignmentGuide(.leading) { d in
+                    if (abs(width - d.width) > geometry.size.width) {
+                        width = 0
+                        height -= d.height + lineSpacing
+                    }
+                    let result = width
+                    if d.width <= geometry.size.width {
+                        width -= d.width + spacing
+                    }
+                    return result
+                }
+                .alignmentGuide(.top) { _ in
+                    let result = height
+                    if width == 0 {
+                        height -= lineSpacing
+                    }
+                    return result
+                }
+        }
     }
 }
 
@@ -280,63 +313,5 @@ struct Placeholder: View {
                 .foregroundStyle(.secondary)
         }
         .padding(.vertical, 8)
-    }
-}
-
-// MARK: - Bottom Tab Bar
-struct BottomTabBar: View {
-    @Binding var selectedTab: String
-    
-    var body: some View {
-        HStack {
-            ForEach(BottomItem.allCases, id: \.self) { item in
-                VStack(spacing: 4) {
-                    Image(systemName: item.icon)
-                        .font(.body)
-                    Text(item.title)
-                        .font(.caption2)
-                }
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 8)
-                .foregroundStyle(selectedTab == item.rawValue.capitalized ? Color.accentColor : .secondary)
-                .onTapGesture { selectedTab = item.rawValue.capitalized }
-            }
-        }
-        .padding(.horizontal)
-        .background(.ultraThinMaterial)
-        .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
-        .padding(.horizontal)
-        .padding(.bottom, 8)
-        .shadow(color: .black.opacity(0.08), radius: 10, y: 4)
-    }
-}
-
-enum BottomItem: String, CaseIterable {
-    case discover, map, projects, hub, profile
-    
-    var title: String {
-        switch self {
-        case .discover: return "Discover"
-        case .map: return "Map"
-        case .projects: return "Projects"
-        case .hub: return "Hub"
-        case .profile: return "Profile"
-        }
-    }
-    var icon: String {
-        switch self {
-        case .discover: return "magnifyingglass"
-        case .map: return "map"
-        case .projects: return "doc.text"
-        case .hub: return "square.grid.3x3"
-        case .profile: return "person.crop.circle"
-        }
-    }
-}
-
-// MARK: - Preview
-struct ProfilePage_Previews: PreviewProvider {
-    static var previews: some View {
-        ProfTab(selectedTab: .constant("Profile"))
     }
 }

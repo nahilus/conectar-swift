@@ -1,4 +1,3 @@
-// MapView.swift
 
 import SwiftUI
 import MapKit
@@ -12,15 +11,17 @@ struct MapView: View {
             span: MKCoordinateSpan(latitudeDelta: 0.018, longitudeDelta: 0.018)
         )
     )
+    @State private var selectedPerson: MapPerson?  // ADD THIS
+    @State private var showPersonDetails = false    // ADD THIS
     
-    var otherPeople: [(name: String, coordinate: CLLocationCoordinate2D)]
+    var otherPeople: [(name: String, userId: String, coordinate: CLLocationCoordinate2D)]
     
     var body: some View {
         Map(position: $region) {
             // User annotation
             if let userLocation = locationManager.lastKnownLocation {
                 Annotation("You", coordinate: userLocation) {
-                    Image("naruto")
+                    Image("cookiejar")
                         .resizable()
                         .frame(width: 40, height: 40)
                 }
@@ -29,17 +30,24 @@ struct MapView: View {
             // Other people
             ForEach(otherPeople, id: \.name) { person in
                 Annotation(person.name, coordinate: person.coordinate) {
-                    VStack {
-                        Image(systemName: "person.fill")
-                            .font(.title)
-                            .foregroundColor(.blue)
-                        if let userLocation = locationManager.lastKnownLocation {
-                            let distanceInMeters = distance(from: userLocation, to: person.coordinate)
-                            Text("\(Int(distanceInMeters)) m away")
-                                .font(.caption)
-                        } else {
-                            Text(person.name)
-                                .font(.caption)
+                    Button(action: {
+                        // When tapped, show their details
+                        selectedPerson = MapPerson(
+                            name: person.name,
+                            userId: person.userId, // You'll replace this with actual userId
+                            coordinate: person.coordinate
+                        )
+                        showPersonDetails = true
+                    }) {
+                        VStack {
+                            Image(systemName: "person.fill")
+                                .font(.title)
+                                .foregroundColor(.blue)
+                            if let userLocation = locationManager.lastKnownLocation {
+                                let distanceInMeters = distance(from: userLocation, to: person.coordinate)
+                                Text("\(Int(distanceInMeters)) m away")
+                                    .font(.caption)
+                            }
                         }
                     }
                 }
@@ -57,6 +65,16 @@ struct MapView: View {
                 )
             }
         }
+        .sheet(isPresented: $showPersonDetails) {  // ADD THIS SHEET
+            if let person = selectedPerson {
+                MapPersonDetailView(
+                    userId: person.userId,
+                    distance: locationManager.lastKnownLocation.map {
+                        Int(distance(from: $0, to: person.coordinate))
+                    }
+                )
+            }
+        }
     }
     
     // Distance helper
@@ -66,3 +84,12 @@ struct MapView: View {
         return loc1.distance(from: loc2)
     }
 }
+
+// ADD THIS STRUCT
+struct MapPerson {
+    let name: String
+    let userId: String
+    let coordinate: CLLocationCoordinate2D
+}
+
+
