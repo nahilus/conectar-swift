@@ -26,6 +26,9 @@ https://github.com/user-attachments/assets/6b6f998e-6fd9-4a49-9bb6-1c215e40ba1c
 
 <img width="730" height="409" alt="image" src="https://github.com/user-attachments/assets/5ce0bdd2-dc13-434a-99a0-fb73ed34211e" />
 
+<img width="730" height="409" alt="image" src="https://github.com/user-attachments/assets/20729f9f-7c9f-42b3-9a86-85d8ba6d824e" />
+
+
 ---
 
 ## Tech Stack
